@@ -24,9 +24,9 @@
 
         <!-- CSV parsing -->
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-            <version>1.11.0</version>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.12.0</version>
         </dependency>
 
         <!-- JSON (for configs / metadata if needed) -->
@@ -39,17 +39,19 @@
         <!-- Logging API -->
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>2.0.13</version>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.17</version>
         </dependency>
 
-        <!-- Logging backend -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-bom</artifactId>
-            <version>2.26.0</version>
-            <scope>import</scope>
-            <type>pom</type>
+            <artifactId>log4j-api</artifactId>
+            <version>2.25.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.25.4</version>
         </dependency>
 
         <!-- Connection pool (VERY important for DB performance) -->
@@ -64,14 +66,6 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>5.10.3</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Optional: assertions (по-приятен API) -->
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>3.26.3</version>
             <scope>test</scope>
         </dependency>
 
