@@ -6,5 +6,6 @@ CREATE TABLE IF NOT EXISTS product (
     product_category TEXT,
     product_price double precision,
     promo_price double precision,
-    firm TEXT
+    firm TEXT,
+    snapshot_date timestamp
 );
