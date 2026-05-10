@@ -2,6 +2,8 @@ package io.sql;
 
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.StringReader;
 import java.sql.Connection;
@@ -10,11 +12,15 @@ public class CopyInserter {
 
     private final StringBuilder buffer = new StringBuilder();
     private final CopyManager copyManager;
+    private final String date;
+
+    private final Logger logger = LoggerFactory.getLogger(CopyInserter.class);
 
     private static final int FLUSH_SIZE = 50_000;
 
-    public CopyInserter(Connection connection) throws Exception {
+    public CopyInserter(Connection connection, String date) throws Exception {
         this.copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
+        this.date = date;
     }
 
     public void add(String[] row, String firm) {
@@ -29,6 +35,7 @@ public class CopyInserter {
         buffer.append(parseNumber(row[5])).append('\t');
         buffer.append(parseNumber(row[6])).append('\t');
         buffer.append(escape(firm)).append('\n');
+        buffer.append(escape(date)).append('\n');
 
         if (buffer.length() > FLUSH_SIZE) {
             flush();
@@ -36,6 +43,8 @@ public class CopyInserter {
     }
 
     public void flush() {
+
+        logger.debug("Flushing {} rows", buffer.length());
         try {
             if (buffer.isEmpty()) return;
 
@@ -48,7 +57,8 @@ public class CopyInserter {
                     product_category,
                     product_price,
                     promo_price,
-                    firm
+                    firm,
+                    snapshot_date
                 )
                 FROM STDIN WITH (FORMAT text)
                 """,
