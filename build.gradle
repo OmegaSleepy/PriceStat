@@ -32,33 +32,74 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
 }
 sourceSets {
-    main(({
+    main {
         java {
-            srcDirs += 'generated'
+            srcDirs += generatedDir
         }
-    } as String))
+    }
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs += [
+            '--enable-native-access=ALL-UNNAMED',
+            // If you ever move to a named module, replace ALL-UNNAMED with your module name
+    ]
+}
+
+tasks.withType(JavaExec).configureEach {
+    // Tells Java to look in the Rust release folder for .so files
+    systemProperty "java.library.path", file("src/main/rust/target/release").absolutePath
 }
 
 tasks.register('buildRust', Exec) {
     workingDir rustDir
+
     commandLine 'cargo', 'build', '--release'
+
+    inputs.dir("${rustDir}/src")
+    inputs.file("${rustDir}/Cargo.toml")
+
+    outputs.file("${rustTargetDir}/libprice_stat.so")
 }
+
 tasks.register('generateHeaders', Exec) {
     dependsOn 'buildRust'
     workingDir rustDir
+
     commandLine 'cbindgen',
-            '--config', "${rootDir}/cbindgen.toml",
-            '--output', 'target/release/bindings.h'
+            '--config', "${projectDir}/cbindgen.toml",
+            '--crate', 'price_stat',
+            '--output', "target/release/bindings.h",
+            "."  // This tells cbindgen to look in the current workingDir (src/main/rust)
+
+    inputs.dir("${rustDir}/src")
+    inputs.file("${rustDir}/Cargo.toml")
+    inputs.file("${projectDir}/cbindgen.toml")
+
+    outputs.file("${rustTargetDir}/bindings.h")
 }
+
 tasks.register('generatePanamaBindings', Exec) {
     dependsOn 'generateHeaders'
+
+    // Get the path from environment or fallback to 'jextract'
+    def jextractPath = System.getenv('JEXTRACT_HOME') ? "${System.getenv('JEXTRACT_HOME')}/bin/jextract" : '/opt/jextract/bin/jextract'
+
     doFirst {
         generatedDir.mkdirs()
     }
-    commandLine 'jextract',
+
+    // If 'jextract' alone fails, paste the absolute path from 'which jextract' here:
+    executable jextractPath
+
+    args(
             '--target-package', 'net.sleepy.nativebind',
             '--output', generatedDir.absolutePath,
-            rustTargetDir.absolutePath + '/bindings.h'
+            "${rustTargetDir.absolutePath}/bindings.h"
+    )
+
+    inputs.file("${rustTargetDir.absolutePath}/bindings.h")
+    outputs.dir(generatedDir)
 }
 tasks.register('cleanRust', Exec) {
     workingDir rustDir
