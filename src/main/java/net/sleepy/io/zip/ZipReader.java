@@ -1,4 +1,4 @@
-package net.sleepy.main.java.io.zip;
+package net.sleepy.io.zip;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,0 +1,75 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+application {
+    mainClass = 'net.sleepy.Test4'
+}
+
+group = 'net.sleepy'
+version = '1.0.0'
+repositories {
+    mavenCentral()
+}
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+def rustDir = file('src/main/rust')
+def rustTargetDir = file('src/main/rust/target/release')
+def generatedDir = file("$buildDir/generated")
+
+dependencies {
+    implementation 'org.postgresql:postgresql:42.7.7'
+    implementation 'com.univocity:univocity-parsers:2.9.1'
+    implementation 'com.google.code.gson:gson:2.11.0'
+    implementation 'org.slf4j:slf4j-simple:2.0.17'
+    implementation 'org.apache.logging.log4j:log4j-api:2.25.4'
+    implementation 'org.apache.logging.log4j:log4j-core:2.25.4'
+    implementation 'com.zaxxer:HikariCP:5.1.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
+}
+sourceSets {
+    main(({
+        java {
+            srcDirs += 'generated'
+        }
+    } as String))
+}
+
+tasks.register('buildRust', Exec) {
+    workingDir rustDir
+    commandLine 'cargo', 'build', '--release'
+}
+tasks.register('generateHeaders', Exec) {
+    dependsOn 'buildRust'
+    workingDir rustDir
+    commandLine 'cbindgen',
+            '--config', "${rootDir}/cbindgen.toml",
+            '--output', 'target/release/bindings.h'
+}
+tasks.register('generatePanamaBindings', Exec) {
+    dependsOn 'generateHeaders'
+    doFirst {
+        generatedDir.mkdirs()
+    }
+    commandLine 'jextract',
+            '--target-package', 'net.sleepy.nativebind',
+            '--output', generatedDir.absolutePath,
+            rustTargetDir.absolutePath + '/bindings.h'
+}
+tasks.register('cleanRust', Exec) {
+    workingDir rustDir
+    commandLine 'cargo', 'clean'
+}
+
+clean.dependsOn 'cleanRust'
+
+compileJava {
+    dependsOn 'generatePanamaBindings'
+}
+test {
+    useJUnitPlatform()
+}

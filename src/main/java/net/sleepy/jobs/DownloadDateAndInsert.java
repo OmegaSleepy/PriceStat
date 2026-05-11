@@ -1,11 +1,11 @@
-package net.sleepy.main.java.jobs;
+package net.sleepy.jobs;
 
-import net.sleepy.main.java.io.csv.CsvPipeline;
-import net.sleepy.main.java.io.csv.Normalization;
-import net.sleepy.main.java.io.sql.CopyInserter;
-import net.sleepy.main.java.io.sql.DataBaseUtil;
-import net.sleepy.main.java.io.zip.ZipReader;
-import net.sleepy.main.java.net.NetworkingClient;
+import net.sleepy.io.csv.CsvPipeline;
+import net.sleepy.io.csv.Normalization;
+import net.sleepy.io.sql.CopyInserter;
+import net.sleepy.io.sql.DataBaseUtil;
+import net.sleepy.io.zip.ZipReader;
+import net.sleepy.net.NetworkingClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

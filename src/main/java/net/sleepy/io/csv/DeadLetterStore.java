@@ -1,4 +1,4 @@
-package net.sleepy.main.java.io.csv;
+package net.sleepy.io.csv;
 
 import java.nio.file.*;
 
