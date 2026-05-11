@@ -1,4 +1,4 @@
-package net;
+package net.sleepy.main.java.net;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

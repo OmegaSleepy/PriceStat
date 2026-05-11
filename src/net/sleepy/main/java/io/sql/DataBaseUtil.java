@@ -1,4 +1,4 @@
-package io.sql;
+package net.sleepy.main.java.io.sql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

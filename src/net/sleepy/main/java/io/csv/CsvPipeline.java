@@ -1,6 +1,6 @@
-package io.csv;
+package net.sleepy.main.java.io.csv;
 
-import io.sql.CopyInserter;
+import net.sleepy.main.java.io.sql.CopyInserter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

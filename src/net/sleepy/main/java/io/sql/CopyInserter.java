@@ -1,4 +1,4 @@
-package io.sql;
+package net.sleepy.main.java.io.sql;
 
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
