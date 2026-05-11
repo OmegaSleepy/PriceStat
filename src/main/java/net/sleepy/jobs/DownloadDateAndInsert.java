@@ -34,6 +34,10 @@ public class DownloadDateAndInsert {
             Files.write(path, rawZip);
         }
 
+        //RUST job calling, parse the full absolute path
+
+        //DELETE BELOW HERE
+
         File file = new File(path.toString());
         ZipReader zipReader = new ZipReader(file);
         log.info("Loading {}", zipReader);
@@ -44,7 +48,7 @@ public class DownloadDateAndInsert {
 
             zipReader.getZipAsNameContentsMap().forEach((firmName, content) -> {
 
-                String firm = Normalization.normBussName(firmName);
+                String firm = Normalization.normBusiness(firmName);
 
                 CsvPipeline.process(content, firm, inserter);
             });

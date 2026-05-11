@@ -3,7 +3,7 @@ package net.sleepy.io.csv;
 import java.util.Map;
 
 public class Normalization {
-
+    @Deprecated
     public static final Map<String, String> aliases = Map.of(
             "населено място", "city",
             "търговски обект", "store",
@@ -13,7 +13,7 @@ public class Normalization {
             "цена на дребно", "price_retail",
             "цена в промоция", "price_promo"
     );
-
+    @Deprecated
     public static String norm (String input) {
         return input == null ? null :
                 input.toLowerCase()
@@ -22,7 +22,8 @@ public class Normalization {
                 .trim();
     }
 
-    public static String normBussName (String input) {
+    ///Simple algorithm to extract the meaningful name of a business' name
+    public static String normBusiness (String input) {
         if (input == null || input.isEmpty()) {
             return "";
         }
@@ -33,7 +34,7 @@ public class Normalization {
                 .toLowerCase()
                 .replace(" ", "_");
     }
-
+    @Deprecated
     public static char detectDelimiter (String line) {
 
         boolean inQuotes = false;
@@ -62,7 +63,7 @@ public class Normalization {
 
         return semicolons > commas ? ';' : ',';
     }
-
+    @Deprecated
     public static String sanitizeBrokenQuotes(String input) {
 
         StringBuilder fixed = new StringBuilder();
@@ -80,7 +81,7 @@ public class Normalization {
 
         return fixed.toString();
     }
-
+    @Deprecated
     public static String repairLine(String line) {
         int quotes = 0;
 

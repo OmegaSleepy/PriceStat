@@ -1,5 +1,6 @@
 package net.sleepy.io.csv;
 
+@Deprecated
 public class LineRepairer {
 
     public static String repair(String line) {

@@ -2,6 +2,7 @@ package net.sleepy.io.csv;
 
 import com.univocity.parsers.csv.*;
 
+@Deprecated
 public class CsvLineParser {
 
     private final CsvParser parser;

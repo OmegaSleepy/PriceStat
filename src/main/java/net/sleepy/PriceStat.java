@@ -2,6 +2,8 @@ package net.sleepy;
 
 import net.sleepy.nativebind.bindings_h;
 
+
+//TODO make an actual Rust interloop class
 public final class PriceStat {
 
     static {

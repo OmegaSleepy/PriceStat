@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.StringReader;
 import java.sql.Connection;
 
+@Deprecated
 public class CopyInserter {
 
     private final StringBuilder buffer = new StringBuilder();

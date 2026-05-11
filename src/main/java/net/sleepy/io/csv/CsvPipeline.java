@@ -4,6 +4,7 @@ import net.sleepy.io.sql.CopyInserter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class CsvPipeline {
 
     private static final CsvLineParser parser = new CsvLineParser();

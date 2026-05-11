@@ -2,6 +2,7 @@ package net.sleepy.io.csv;
 
 import java.nio.file.*;
 
+@Deprecated
 public class DeadLetterStore {
 
     private static final Path file = Path.of("bad_rows.log");
