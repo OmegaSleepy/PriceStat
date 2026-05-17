@@ -6,7 +6,7 @@ use std::os::raw::c_char;
 use std::path::Path;
 use std::sync::Arc;
 
-use chrono::{NaiveDateTime, Utc};
+use chrono::{NaiveDate, NaiveDateTime, Utc};
 use deadpool_postgres::{tokio_postgres::types::ToSql, Manager, Pool, Runtime as DeadpoolRuntime};
 use futures_util::pin_mut;
 use tokio::runtime::Runtime;
@@ -49,7 +49,6 @@ pub extern "C" fn parse_zip_csv(c_buf: *const c_char) {
     });
 }
 
-// Helper to extract snapshot_date from ZIP filename
 fn parse_snapshot_date(zip_path: &str) -> (String, NaiveDateTime) {
     let path = Path::new(zip_path);
     let stem = path
@@ -158,20 +157,21 @@ async fn process_zip(zip_path: String) {
 
             pin_mut!(writer);
 
-            for row in parsed_rows {
-                // Safeguard against short arrays from chaotic csv lines
-                let city = row.get(0).cloned();
-                let shop_address = row.get(1).cloned();
-                let product_name = row.get(2).cloned();
-                let product_id = row.get(3).cloned();
-                let product_category = row.get(4).cloned();
+            // Pull the firm name reference outside the loop so we don't evaluate it per row
+            let firm = Some(&file.name);
+            let s_date = Some(&snapshot_date);
 
-                // Parse prices safely into Option<f64>
+            for row in &parsed_rows {
+                // Zero-allocation extraction: extract everything as Option<&str>
+                let city = row.get(0).map(|s| s.as_str());
+                let shop_address = row.get(1).map(|s| s.as_str());
+                let product_name = row.get(2).map(|s| s.as_str());
+                let product_id = row.get(3).map(|s| s.as_str());
+                let product_category = row.get(4).map(|s| s.as_str());
+
+                // Parse numeric values directly from the references safely into Option<f64>
                 let product_price: Option<f64> = row.get(5).and_then(|s| s.parse().ok());
                 let promo_price: Option<f64> = row.get(6).and_then(|s| s.parse().ok());
-
-                let firm = Some(file.name.clone());
-                let s_date = Some(snapshot_date);
 
                 let values: &[&(dyn ToSql + Sync)] = &[
                     &city,
