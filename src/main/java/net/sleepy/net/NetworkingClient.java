@@ -9,21 +9,32 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 public class NetworkingClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NetworkingClient.class);
 
-    public static byte[] get (String url) throws IOException, InterruptedException {
+    private static final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+
+    public static Optional<byte[]> get (String url) throws IOException, InterruptedException {
         logger.info("Getting url {}", url);
         URI uri = URI.create(url);
-        HttpClient httpClient = HttpClient.newBuilder().build();
+
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()
-                .timeout(Duration.of(5, ChronoUnit.SECONDS))
-                .uri(uri).build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray()).body();
+                .timeout(Duration.ofSeconds(5))
+                .uri(uri)
+                .build();
 
+        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+        if (response.statusCode() >= 400) {
+            logger.info("Bad response code {}", response.statusCode());
+            return Optional.empty();
+        }
+
+        return Optional.of(response.body());
     }
 }
