@@ -116,9 +116,9 @@ async fn process_zip(zip_path: String) {
 
         let handle = tokio::spawn(async move {
             let parsed_rows = parse_chaotic_csv(&file.content);
-            let row_count = parsed_rows.len();
+            let total_rows = parsed_rows.len();
 
-            if row_count == 0 {
+            if total_rows <= 1 {
                 return 0;
             }
 
@@ -157,11 +157,10 @@ async fn process_zip(zip_path: String) {
 
             pin_mut!(writer);
 
-            // Pull the firm name reference outside the loop so we don't evaluate it per row
             let firm = Some(&file.name);
             let s_date = Some(&snapshot_date);
 
-            for row in &parsed_rows {
+            for row in parsed_rows.iter().skip(1) {
                 // Zero-allocation extraction: extract everything as Option<&str>
                 let city = row.get(0).map(|s| s.as_str());
                 let shop_address = row.get(1).map(|s| s.as_str());
@@ -170,8 +169,15 @@ async fn process_zip(zip_path: String) {
                 let product_category = row.get(4).map(|s| s.as_str());
 
                 // Parse numeric values directly from the references safely into Option<f64>
-                let product_price: Option<f64> = row.get(5).and_then(|s| s.parse().ok());
-                let promo_price: Option<f64> = row.get(6).and_then(|s| s.parse().ok());
+                let product_price: Option<f64> = row.get(5).and_then(|s| {
+                    let sanitized = s.replace(',', ".");
+                    sanitized.parse().ok()
+                });
+
+                let promo_price: Option<f64> = row.get(6).and_then(|s| {
+                    let sanitized = s.replace(',', ".");
+                    sanitized.parse().ok()
+                });
 
                 let values: &[&(dyn ToSql + Sync)] = &[
                     &city,
@@ -192,7 +198,7 @@ async fn process_zip(zip_path: String) {
             }
 
             match writer.finish().await {
-                Ok(_) => row_count,
+                Ok(_) => total_rows - 1,
                 Err(e) => {
                     eprintln!("Error completing database COPY: {}", e);
                     0
