@@ -18,22 +18,38 @@ public class Test4 {
     }
 
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main (String[] args) throws IOException, InterruptedException {
 
         var list = DateUtils.getDatesInRange(
                 LocalDate.of(2025, 11, 1),
                 LocalDate.now()
         );
 
+        for (int i = 0; i < list.size(); i += 2) {
+            list.set(i, null);
+        }
+
         Semaphore connectionSemaphore = new Semaphore(5);
+        Semaphore rustSemaphore = new Semaphore(2);
 
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             list.forEach(date -> executor.submit(() -> {
+
+                if (date == null)
+                    return;
+
                 try {
-                    // Pass the semaphore to the job
+                    rustSemaphore.acquire();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                try {
                     new DateZipJob(date, connectionSemaphore).run();
                 } catch (InterruptedException e) {
                     log.error(e.getMessage(), e);
+                } finally {
+                    rustSemaphore.release();
                 }
             }));
         }

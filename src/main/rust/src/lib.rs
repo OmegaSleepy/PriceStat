@@ -6,12 +6,15 @@ use std::os::raw::c_char;
 use std::path::Path;
 use std::sync::Arc;
 
-use chrono::{NaiveDate, NaiveDateTime, Utc};
-use deadpool_postgres::{tokio_postgres::types::ToSql, Manager, Pool, Runtime as DeadpoolRuntime};
-use futures_util::pin_mut;
+use once_cell::sync::Lazy;
 use tokio::runtime::Runtime;
+use deadpool_postgres::{Pool, Manager, Runtime as DeadpoolRuntime};
+
+use chrono::{NaiveDate, NaiveDateTime, Utc};
+use futures_util::pin_mut;
 use tokio::task;
 use tokio_postgres::binary_copy::BinaryCopyInWriter;
+use tokio_postgres::types::ToSql;
 
 // Structure to carry file content metadata
 struct CsvFile {
@@ -36,15 +39,7 @@ pub extern "C" fn parse_zip_csv(c_buf: *const c_char) {
         }
     };
 
-    let runtime = match Runtime::new() {
-        Ok(rt) => rt,
-        Err(e) => {
-            eprintln!("Failed creating runtime: {}", e);
-            return;
-        }
-    };
-
-    runtime.block_on(async {
+    TOKIO_RUNTIME.block_on(async {
         process_zip(zip_path).await;
     });
 }
@@ -73,23 +68,30 @@ fn parse_snapshot_date(zip_path: &str) -> (String, NaiveDateTime) {
 }
 
 fn create_db_pool() -> Pool {
-    // 1. Create the native tokio_postgres config directly
     let mut pg_cfg = deadpool_postgres::tokio_postgres::Config::new();
+
     pg_cfg.user("appuser");
     pg_cfg.password("apppassword");
     pg_cfg.dbname("appdb");
-    pg_cfg.host("localhost"); // Change to your DB host
+    pg_cfg.host("localhost");
 
-    // 2. Pass it into the Manager
-    let mgr = Manager::new(pg_cfg, deadpool_postgres::tokio_postgres::NoTls);
+    let mgr = Manager::new(
+        pg_cfg,
+        deadpool_postgres::tokio_postgres::NoTls,
+    );
 
-    // 3. Build the pool
     Pool::builder(mgr)
-        .max_size(16) // Scale based on machine cores
+        .max_size(16)
         .runtime(DeadpoolRuntime::Tokio1)
         .build()
         .unwrap()
 }
+
+static DB_POOL: Lazy<Pool> = Lazy::new(create_db_pool);
+
+static TOKIO_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
+    Runtime::new().expect("Failed to create runtime")
+});
 
 async fn process_zip(zip_path: String) {
     let (snapshot_name, snapshot_date) = parse_snapshot_date(&zip_path);
@@ -107,11 +109,11 @@ async fn process_zip(zip_path: String) {
         }
     };
 
-    let pool = Arc::new(create_db_pool());
+    let pool = &*DB_POOL;
     let mut handles = Vec::new();
 
     for file in csv_contents {
-        let pool = Arc::clone(&pool);
+        let pool = DB_POOL.clone();
         let snapshot_date = snapshot_date.clone();
 
         let handle = tokio::spawn(async move {
