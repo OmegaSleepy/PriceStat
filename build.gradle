@@ -82,24 +82,21 @@ tasks.register('generateHeaders', Exec) {
 tasks.register('generatePanamaBindings', Exec) {
     dependsOn 'generateHeaders'
 
-    // Get the path from environment or fallback to 'jextract'
     def jextractPath = System.getenv('JEXTRACT_HOME') ? "${System.getenv('JEXTRACT_HOME')}/bin/jextract" : '/opt/jextract/bin/jextract'
+
+    inputs.file("${rustTargetDir.absolutePath}/bindings.h")
+    outputs.dir(file("${generatedDir.absolutePath}/net/sleepy/nativebind"))
 
     doFirst {
         generatedDir.mkdirs()
     }
 
-    // If 'jextract' alone fails, paste the absolute path from 'which jextract' here:
     executable jextractPath
-
     args(
             '--target-package', 'net.sleepy.nativebind',
             '--output', generatedDir.absolutePath,
             "${rustTargetDir.absolutePath}/bindings.h"
     )
-
-    inputs.file("${rustTargetDir.absolutePath}/bindings.h")
-    outputs.dir(generatedDir)
 }
 tasks.register('cleanRust', Exec) {
     workingDir rustDir
