@@ -4,11 +4,10 @@ use std::fs::File;
 use std::io::Read;
 use std::os::raw::c_char;
 use std::path::Path;
-use std::sync::Arc;
 
+use deadpool_postgres::{Manager, Pool, Runtime as DeadpoolRuntime};
 use once_cell::sync::Lazy;
 use tokio::runtime::Runtime;
-use deadpool_postgres::{Pool, Manager, Runtime as DeadpoolRuntime};
 
 use chrono::{NaiveDate, NaiveDateTime, Utc};
 use futures_util::pin_mut;
@@ -57,7 +56,8 @@ fn parse_snapshot_date(zip_path: &str) -> (String, NaiveDateTime) {
     }
     // 2. Fall back to just the date: "2026-05-16" and attach midnight time
     else if let Ok(date) = NaiveDate::parse_from_str(stem, "%Y-%m-%d") {
-        date.and_hms_opt(0, 0, 0).unwrap_or_else(|| Utc::now().naive_utc())
+        date.and_hms_opt(0, 0, 0)
+            .unwrap_or_else(|| Utc::now().naive_utc())
     }
     // 3. Ultimate fallback if the filename format is missing entirely
     else {
@@ -68,17 +68,14 @@ fn parse_snapshot_date(zip_path: &str) -> (String, NaiveDateTime) {
 }
 
 fn create_db_pool() -> Pool {
-    let mut pg_cfg = deadpool_postgres::tokio_postgres::Config::new();
+    let mut pg_cfg = tokio_postgres::Config::new();
 
     pg_cfg.user("appuser");
     pg_cfg.password("apppassword");
     pg_cfg.dbname("appdb");
     pg_cfg.host("localhost");
 
-    let mgr = Manager::new(
-        pg_cfg,
-        deadpool_postgres::tokio_postgres::NoTls,
-    );
+    let mgr = Manager::new(pg_cfg, deadpool_postgres::tokio_postgres::NoTls);
 
     Pool::builder(mgr)
         .max_size(16)
@@ -89,9 +86,8 @@ fn create_db_pool() -> Pool {
 
 static DB_POOL: Lazy<Pool> = Lazy::new(create_db_pool);
 
-static TOKIO_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
-    Runtime::new().expect("Failed to create runtime")
-});
+static TOKIO_RUNTIME: Lazy<Runtime> =
+    Lazy::new(|| Runtime::new().expect("Failed to create runtime"));
 
 async fn process_zip(zip_path: String) {
     let (snapshot_name, snapshot_date) = parse_snapshot_date(&zip_path);
@@ -145,17 +141,20 @@ async fn process_zip(zip_path: String) {
                 }
             };
 
-            let writer = BinaryCopyInWriter::new(sink, &[
-                tokio_postgres::types::Type::TEXT,
-                tokio_postgres::types::Type::TEXT,
-                tokio_postgres::types::Type::TEXT,
-                tokio_postgres::types::Type::TEXT,
-                tokio_postgres::types::Type::TEXT,
-                tokio_postgres::types::Type::FLOAT8,
-                tokio_postgres::types::Type::FLOAT8,
-                tokio_postgres::types::Type::TEXT,
-                tokio_postgres::types::Type::TIMESTAMP,
-            ]);
+            let writer = BinaryCopyInWriter::new(
+                sink,
+                &[
+                    tokio_postgres::types::Type::TEXT,
+                    tokio_postgres::types::Type::TEXT,
+                    tokio_postgres::types::Type::TEXT,
+                    tokio_postgres::types::Type::TEXT,
+                    tokio_postgres::types::Type::TEXT,
+                    tokio_postgres::types::Type::FLOAT8,
+                    tokio_postgres::types::Type::FLOAT8,
+                    tokio_postgres::types::Type::TEXT,
+                    tokio_postgres::types::Type::TIMESTAMP,
+                ],
+            );
 
             pin_mut!(writer);
 
@@ -223,7 +222,10 @@ async fn process_zip(zip_path: String) {
         }
     }
 
-    println!("Finished processing snapshot '{}'. Total rows written to DB: {}", snapshot_name, total_rows);
+    println!(
+        "Finished processing snapshot '{}'. Total rows written to DB: {}",
+        snapshot_name, total_rows
+    );
 }
 
 fn extract_csvs(
@@ -266,13 +268,16 @@ fn parse_chaotic_csv(csv_data: &str) -> Vec<Vec<String>> {
     let mut records = Vec::new();
 
     // Peek at the first non-empty line to dynamically detect the delimiter
-    let first_line = csv_data.lines().find(|l| !l.trim().is_empty()).unwrap_or("");
+    let first_line = csv_data
+        .lines()
+        .find(|l| !l.trim().is_empty())
+        .unwrap_or("");
     let delimiter = detect_delimiter(first_line);
 
     // Initialize the CSV reader configured with the correct delimiter
     let mut reader = csv::ReaderBuilder::new()
         .has_headers(false) // Assuming data has no headers based on your code
-        .flexible(true)     // Handles "chaotic" rows with different column counts
+        .flexible(true) // Handles "chaotic" rows with different column counts
         .delimiter(delimiter as u8)
         .from_reader(csv_data.as_bytes());
 
