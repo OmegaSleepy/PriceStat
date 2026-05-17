@@ -57,11 +57,18 @@ fn parse_snapshot_date(zip_path: &str) -> (String, NaiveDateTime) {
         .and_then(|s| s.to_str())
         .unwrap_or("unknown_snapshot");
 
-    // Attempt to parse standard ISO/Common formats if applicable, e.g., "2026-05-17"
-    // Otherwise fallback safely to Utc::now().naive_utc()
-    let snapshot_date = NaiveDateTime::parse_from_str(stem, "%Y-%m-%d_%H-%M-%S")
-        .or_else(|_| NaiveDateTime::parse_from_str(stem, "%Y-%m-%d"))
-        .unwrap_or_else(|_| Utc::now().naive_utc());
+    // 1. Try parsing full timestamp first: "2026-05-16_14-30-00"
+    let snapshot_date = if let Ok(dt) = NaiveDateTime::parse_from_str(stem, "%Y-%m-%d_%H-%M-%S") {
+        dt
+    }
+    // 2. Fall back to just the date: "2026-05-16" and attach midnight time
+    else if let Ok(date) = NaiveDate::parse_from_str(stem, "%Y-%m-%d") {
+        date.and_hms_opt(0, 0, 0).unwrap_or_else(|| Utc::now().naive_utc())
+    }
+    // 3. Ultimate fallback if the filename format is missing entirely
+    else {
+        Utc::now().naive_utc()
+    };
 
     (stem.to_string(), snapshot_date)
 }
