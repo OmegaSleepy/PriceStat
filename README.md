@@ -108,20 +108,9 @@ PostgreSQL Data Lake (35GB+)
 
 ## Known Issues
 
-- ⚠️ Test4.java causes system instability in certain environments (investigation ongoing), if you experience RAM issues I recommend adjusting the set Semaphor limit in the class 
+- ⚠️ Test4.java causes system instability in certain environments (investigation ongoing), if you experience RAM issues I recommend adjusting the set Semaphore limit in the class 
 - Performance considerations noted for 35GB+ dataset processing
 - CSV format inconsistencies across vendor exports require custom parsing logic
-
-## Contributing
-
-PriceStat is actively seeking improvements and optimizations. Contributions are welcome, particularly:
-
-- Performance enhancements for large-scale data processing
-- Improved CSV parsing heuristics
-- Query optimization for the data lake
-- Infrastructure as Code improvements
-
-Please open a pull request with your improvements or open an issue to discuss potential changes.
 
 ## Data Visualization
 
