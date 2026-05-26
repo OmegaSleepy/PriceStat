@@ -1,6 +1,6 @@
 # PriceStat
 
-A high-performance platform for tracking and analyzing pricing trends across Bulgarian retail and pharmaceutical sectors. PriceStat aggregates open data from KZP (Commission for Protecting Consumers in Bulgaria) and processes enormous datasets to extract actionable insights on market dynamics.
+A high-performance platform for tracking and analyzing pricing trends across Bulgarian retail and pharmaceutical sectors. PriceStat aggregates open data from [KZP](https://kolkostruva.bg/compare) (Commission for Protecting Consumers in Bulgaria) and processes enormous datasets to extract actionable insights on market dynamics.
 
 ## Overview
 
@@ -30,8 +30,8 @@ PriceStat processes **35GB+ of historical pricing data** collected daily from ma
 ## Project Statistics
 
 - **Dataset Size**: 35GB+
-- **Languages**: Rust (61.6%), Java (36%), Dockerfile (2.4%)
-- **Data Sources**: 5+ major retailers + additional vendors
+- **Languages**: Rust (61.6%), Java (36%), Dockerfile (2.4%) (numbers are not indicative)
+- **Data Sources**: 5+ major retailers + additional vendors (total 221)
 - **Daily Processing**: ~250MB per data point
 
 ## Getting Started
@@ -77,7 +77,11 @@ PriceStat processes **35GB+ of historical pricing data** collected daily from ma
 
 ```
 KZP Open Data
-    ↓
+   ↓
+Java HTTP ZIP file quering and saving
+   ↓
+Java FFI Class that sends an Arena with the file path of the to be worked on ZIP
+   ↓
 Rust Ingestor (Tokio)
     ↓
 CSV Validation & Cleaning
@@ -87,8 +91,6 @@ Format Normalization
 tokio-postgres
     ↓
 PostgreSQL Data Lake (35GB+)
-    ↓
-Java Orchestration Layer
 ```
 
 ### Key Components
@@ -103,11 +105,10 @@ Java Orchestration Layer
 - FFI-based coordination of Rust tasks
 - Workflow management and error handling
 - Scheduling and monitoring
-- RESTful API (if applicable)
 
 ## Known Issues
 
-- ⚠️ Test4.java causes system instability in certain environments (investigation ongoing)
+- ⚠️ Test4.java causes system instability in certain environments (investigation ongoing), if you experience RAM issues I recommend adjusting the set Semaphor limit in the class 
 - Performance considerations noted for 35GB+ dataset processing
 - CSV format inconsistencies across vendor exports require custom parsing logic
 
@@ -116,7 +117,6 @@ Java Orchestration Layer
 PriceStat is actively seeking improvements and optimizations. Contributions are welcome, particularly:
 
 - Performance enhancements for large-scale data processing
-- Additional vendor data source integrations
 - Improved CSV parsing heuristics
 - Query optimization for the data lake
 - Infrastructure as Code improvements
@@ -125,31 +125,27 @@ Please open a pull request with your improvements or open an issue to discuss po
 
 ## Data Visualization
 
-### Price Trends Analysis
+### Price of Bread Trend
 
-![Placeholder for price trends visualization](https://via.placeholder.com/800x400?text=Price+Trends+Over+Time)
+![Placeholder for analysis](https://via.placeholder.com/800x400?text=Price+Trends+Over+Time)
 
-### Vendor Market Share
+### Price of Flour Trend
 
-![Placeholder for market share analysis](https://via.placeholder.com/800x400?text=Vendor+Market+Share)
+![Placeholder for analysis](https://via.placeholder.com/800x400?text=Vendor+Market+Share)
 
-### Category Price Comparison
+### Price of Sugar Trend
 
-![Placeholder for category comparison](https://via.placeholder.com/800x400?text=Price+Comparison+by+Category)
-
-### Data Quality Metrics
-
-![Placeholder for data quality dashboard](https://via.placeholder.com/800x400?text=Data+Quality+Metrics)
+![Placeholder for analysis](https://via.placeholder.com/800x400?text=Price+Comparison+by+Category)
 
 ## License
 
-[Specify your license here]
+[MIT]
 
 ## Contact
 
-For questions or collaboration inquiries, please open an issue or contact the maintainers.
+For questions or collaboration inquiries, please open an issue or contact me (OmegaSleepy).
 
 ---
 
-**Last Updated**: 2026-05-26  
-**Dataset Version**: 35GB+ (continuously growing)
+## A note about my analysis
+Prices are growing and the trends are there, my project is not aimed to be the next "app to check for the price of bread the last week". My goal with this project was and still is to experiment, learn and implement Rust to Java with FFI and I learned a lot. Do not expect this project to be updated or maintained, reproducability may varry. 
