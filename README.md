@@ -127,15 +127,15 @@ Please open a pull request with your improvements or open an issue to discuss po
 
 ### Price of Bread Trend
 
-![Placeholder for analysis](https://via.placeholder.com/800x400?text=Price+Trends+Over+Time)
+![Placeholder for analysis](plots/daily_bread_price_trend.png)
 
 ### Price of Flour Trend
 
-![Placeholder for analysis](https://via.placeholder.com/800x400?text=Vendor+Market+Share)
+![Placeholder for analysis](plots/daily_bread_flour_trend.png)
 
 ### Price of Sugar Trend
 
-![Placeholder for analysis](https://via.placeholder.com/800x400?text=Price+Comparison+by+Category)
+![Placeholder for analysis](plots/daily_bread_sugar_trend.png)
 
 ## License
 
