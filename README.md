@@ -131,11 +131,11 @@ Please open a pull request with your improvements or open an issue to discuss po
 
 ### Price of Flour Trend
 
-![Placeholder for analysis](plots/daily_bread_flour_trend.png)
+![Placeholder for analysis](plots/daily_flour_price_trend.png)
 
 ### Price of Sugar Trend
 
-![Placeholder for analysis](plots/daily_bread_sugar_trend.png)
+![Placeholder for analysis](plots/daily_sugar_price_trend.png)
 
 ## License
 
